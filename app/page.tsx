@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Power, Zap, Droplets, Thermometer, AlertCircle } from "lucide-react"
 
 export default function Dashboard() {
@@ -20,7 +19,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isConnected, setIsConnected] = useState(false)
-  const [isSendingCommand, setIsSendingCommand] = useState(false)
 
   const fetchSensorData = async () => {
     try {
@@ -59,30 +57,6 @@ export default function Dashboard() {
     } catch (err) {
       setError("Failed to fetch sensor data from ESP32")
       console.error("[v0] Sensor data fetch error:", err)
-    }
-  }
-
-  const sendControlCommand = async (command: string, value: boolean) => {
-    try {
-      setIsSendingCommand(true)
-      const response = await fetch("/api/controls", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ command, value }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to send command to ESP32")
-      }
-
-      const result = await response.json()
-      console.log("[v0] Command response:", result)
-      setError(null)
-    } catch (err) {
-      setError("Failed to communicate with ESP32")
-      console.error("[v0] Control command error:", err)
-    } finally {
-      setIsSendingCommand(false)
     }
   }
 
@@ -141,12 +115,6 @@ export default function Dashboard() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleLightsToggle = async () => {
-    const newState = !lightsOn
-    setLightsOn(newState)
-    await sendControlCommand("lights", newState)
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
       <div className="max-w-7xl mx-auto">
@@ -180,28 +148,13 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Power className="w-5 h-5" />
-              System Controls
+              Street Lights Status
             </CardTitle>
-            <CardDescription>Manage street lighting and system settings</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-3">
-              <p className="text-sm font-medium text-slate-300">Street Lights (LEDs)</p>
-              <p className="text-xs text-slate-400">
-                {lightsOn ? "🟢 Lights are currently ON" : "🔴 Lights are currently OFF"}
-              </p>
-              <Button
-                onClick={handleLightsToggle}
-                disabled={isSendingCommand}
-                className={`${
-                  lightsOn
-                    ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                    : "bg-slate-700 hover:bg-slate-600 text-slate-300"
-                } transition-colors w-full disabled:opacity-50`}
-              >
-                <Power className="w-4 h-4 mr-2" />
-                {isSendingCommand ? "Sending..." : lightsOn ? "Turn Off" : "Turn On"}
-              </Button>
+            <div className="flex items-center gap-4">
+              <div className={`w-4 h-4 rounded-full animate-pulse ${lightsOn ? "bg-emerald-400" : "bg-slate-500"}`} />
+              <span className="text-lg font-medium text-white">{lightsOn ? "Lights are ON" : "Lights are OFF"}</span>
             </div>
           </CardContent>
         </Card>
