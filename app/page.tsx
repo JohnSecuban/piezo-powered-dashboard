@@ -8,12 +8,10 @@ export default function Dashboard() {
   const [lightsOn, setLightsOn] = useState(false)
   const [currentEnergy, setCurrentEnergy] = useState({ generated: 0, stored: 0 })
   const [solarEnergy, setSolarEnergy] = useState(0)
-  const [piezoEnergy, setPiezoEnergy] = useState(0)
   const [currentTemp, setCurrentTemp] = useState(0)
   const [currentHumidity, setCurrentHumidity] = useState(0)
   const [energyHistory, setEnergyHistory] = useState<Array<{ time: string; generated: number; stored: number }>>([])
   const [solarHistory, setSolarHistory] = useState<Array<{ time: string; solar: number }>>([])
-  const [piezoHistory, setPiezoHistory] = useState<Array<{ time: string; piezo: number }>>([])
   const [tempHistory, setTempHistory] = useState<Array<{ time: string; temp: number }>>([])
   const [humidityHistory, setHumidityHistory] = useState<Array<{ time: string; humidity: number }>>([])
   const [loading, setLoading] = useState(true)
@@ -22,8 +20,6 @@ export default function Dashboard() {
 
   const fetchSensorData = async () => {
     try {
-      // In production, this would fetch from your ESP32 endpoint
-      // For now, we simulate the data and keep the mock pattern
       const now = new Date()
       const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
 
@@ -37,19 +33,14 @@ export default function Dashboard() {
       const newSolar = { time: timeStr, solar: Math.random() * 120 + 40 }
       setSolarEnergy(newSolar.solar)
 
-      const newPiezo = { time: timeStr, piezo: Math.random() * 80 + 20 }
-      setPiezoEnergy(newPiezo.piezo)
-
       const newTemp = { time: timeStr, temp: Math.random() * 8 + 22 }
       setCurrentTemp(newTemp.temp)
 
       const newHumidity = { time: timeStr, humidity: Math.random() * 20 + 45 }
       setCurrentHumidity(newHumidity.humidity)
 
-      // Update history
       setEnergyHistory((prev) => [...prev.slice(-11), newEnergy])
       setSolarHistory((prev) => [...prev.slice(-11), newSolar])
-      setPiezoHistory((prev) => [...prev.slice(-11), newPiezo])
       setTempHistory((prev) => [...prev.slice(-11), newTemp])
       setHumidityHistory((prev) => [...prev.slice(-11), newHumidity])
 
@@ -61,7 +52,6 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    // Initialize with some starting data
     const initialData = Array.from({ length: 5 }, (_, i) => {
       const time = new Date(Date.now() - (5 - i) * 2000).toLocaleTimeString("en-US", {
         hour: "2-digit",
@@ -83,13 +73,6 @@ export default function Dashboard() {
     setSolarHistory(solarData)
     setSolarEnergy(solarData[solarData.length - 1].solar)
 
-    const piezoData = Array.from({ length: 5 }, (_, i) => ({
-      time: initialData[i].time,
-      piezo: Math.random() * 80 + 20,
-    }))
-    setPiezoHistory(piezoData)
-    setPiezoEnergy(piezoData[piezoData.length - 1].piezo)
-
     const tempData = Array.from({ length: 5 }, (_, i) => ({
       time: initialData[i].time,
       temp: Math.random() * 8 + 22,
@@ -107,7 +90,6 @@ export default function Dashboard() {
     setIsConnected(true)
     setLoading(false)
 
-    // Set up interval for real-time updates
     const interval = setInterval(() => {
       fetchSensorData()
     }, 2000)
@@ -171,20 +153,6 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-yellow-400">{solarEnergy.toFixed(1)}</div>
-              <p className="text-xs text-slate-400 mt-1">Watts</p>
-            </CardContent>
-          </Card>
-
-          {/* Piezo Energy Generated */}
-          <Card className="bg-slate-800/50 border-slate-700 backdrop-blur">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                <Zap className="w-4 h-4 text-purple-400" />
-                Piezo Energy
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-purple-400">{piezoEnergy.toFixed(1)}</div>
               <p className="text-xs text-slate-400 mt-1">Watts</p>
             </CardContent>
           </Card>
@@ -269,30 +237,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Piezo Energy Chart */}
-          <Card className="bg-slate-800/50 border-slate-700 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-white">Piezo Energy Generation</CardTitle>
-              <CardDescription>Real-time piezo power output (Watts)</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 flex items-end justify-around gap-2 bg-slate-900/30 rounded-lg p-4">
-                {piezoHistory.map((item, idx) => (
-                  <div key={idx} className="flex flex-col items-center gap-2 flex-1">
-                    <div
-                      className="w-full bg-gradient-to-t from-purple-400 to-purple-500 rounded-t transition-all"
-                      style={{ height: `${(item.piezo / 100) * 100}%` }}
-                    />
-                    <span className="text-xs text-slate-400">{item.time}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Environmental Data */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Temperature Chart */}
           <Card className="bg-slate-800/50 border-slate-700 backdrop-blur">
             <CardHeader>
