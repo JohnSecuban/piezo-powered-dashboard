@@ -8,18 +8,20 @@ DHT dht(DHTPIN, DHTTYPE);
 
 #define LDR_PIN 35
 
-#define LED1 13
-#define LED2 12
+#define LED1 12
+#define LED2 33
 #define LED3 14
 #define LED4 27
+#define LED5 25
+
 
 const char* ssid = "Muffin";
 const char* password = "akobudoyy";
-const char* server = "https://v0-piezo-powered-dashboard.vercel.app/"; // Replace with your actual endpoint
+const char* server = "https://v0-piezo-powered-dashboard.vercel.app/";
 
-int ldrThreshold = 2000;  // Adjust based on your environment
+int ldrThreshold = 2000;
 unsigned long lastSendTime = 0;
-const unsigned long sendInterval = 5000;  // Dashboard update every 5 seconds
+const unsigned long sendInterval = 5000;
 
 void setup() {
   Serial.begin(115200);
@@ -30,6 +32,8 @@ void setup() {
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
   pinMode(LED4, OUTPUT);
+  pinMode(LED5, OUTPUT);
+  // ✅ Initialized LED6
 
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
@@ -60,22 +64,16 @@ void loop() {
     return;
   }
 
-  // LED control based on LDR
   bool isBright = ldrValue >= ldrThreshold;
 
-  if (isBright) {
-    digitalWrite(LED1, HIGH);
-    digitalWrite(LED2, HIGH);
-    digitalWrite(LED3, HIGH);
-    digitalWrite(LED4, HIGH);
-  } else {
-    digitalWrite(LED1, LOW);
-    digitalWrite(LED2, LOW);
-    digitalWrite(LED3, LOW);
-    digitalWrite(LED4, LOW);
-  }
+  int ledState = isBright ? HIGH : LOW;
+  digitalWrite(LED1, ledState);
+  digitalWrite(LED2, ledState);
+  digitalWrite(LED3, ledState);
+  digitalWrite(LED4, ledState);
+  digitalWrite(LED5, ledState);
+ // ✅ LED6 control
 
-  // Serial output
   Serial.print("Raw LDR value: ");
   Serial.println(ldrValue);
   Serial.print("LDR: ");
@@ -87,7 +85,6 @@ void loop() {
   Serial.print(" % | Lights: ");
   Serial.println(isBright ? "ON" : "OFF");
 
-  // Send to IoT dashboard every 5 seconds
   if (millis() - lastSendTime >= sendInterval && WiFi.status() == WL_CONNECTED) {
     lastSendTime = millis();
 
@@ -106,5 +103,5 @@ void loop() {
     http.end();
   }
 
-  delay(100);  // Fast LED reaction time
+  delay(100);  // Fast LED reaction
 }
