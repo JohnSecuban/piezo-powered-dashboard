@@ -105,7 +105,7 @@ export default function Dashboard() {
           <div>
             <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
               <Zap className="w-10 h-10 text-emerald-400" />
-              Piezo Energy System
+              SIDEWALK monitoring
             </h1>
             <p className="text-slate-400">Real-time monitoring of sidewalk energy generation</p>
           </div>
